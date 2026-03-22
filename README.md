@@ -154,6 +154,118 @@ The demo loads each file, parses it using `org.json`, and converts it into a `Ma
 
 These methods recursively convert JSON objects and arrays into Java maps and lists, making them compatible with the `StepFactory`.
 
+# UML Class Diagram
+
+This diagram summarizes the major classes and relationships in the Workflow Automation System.
+
+---
+
+## 1. Core Model
+
+Step (interface)
+ ├── DelayStep
+ ├── NotifyStep
+ ├── TransformStep
+ ├── FilterStep
+ └── CompositeStep
+        └── - children : List<Step>
+        └── + getChildren() : List<Step>
+
+Notes:
+- All concrete steps implement `accept(Visitor v)`
+- `CompositeStep` implements recursive traversal
+
+---
+
+## 2. Factory Pattern
+
+StepFactory
+ ├── + create(Map<String,Object>) : Step
+ ├── Uses "type" field to determine concrete Step
+ └── Recursively builds CompositeStep children
+
+Relationships:
+- StepFactory → Step (creates)
+- StepFactory → CompositeStep (recursive creation)
+
+---
+
+## 3. Visitor Pattern
+
+Visitor (interface)
+ ├── + visit(DelayStep)
+ ├── + visit(NotifyStep)
+ ├── + visit(TransformStep)
+ ├── + visit(FilterStep)
+ ├── + visit(CompositeStep)
+ └── + leaveComposite(CompositeStep)
+
+Concrete Visitors:
+- ValidationVisitor
+    - + errors : List<String>
+- CostVisitor
+    - + totalCost : int
+- PrettyPrintVisitor
+    - + output : StringBuilder
+    - + depth : int
+
+Relationships:
+- Step → Visitor (accept/visit)
+- CompositeStep drives traversal by calling visitor on children
+
+---
+
+## 4. Iterator Pattern
+
+DepthFirstIterator
+ ├── - stack : Deque<Step>
+ └── + next(), hasNext()
+
+LinearIterator
+ ├── - list : List<Step>
+ └── + next(), hasNext()
+
+Relationships:
+- Iterators operate on Step trees
+- CompositeStep structure determines traversal order
+
+---
+
+## 5. Memento Pattern
+
+WorkflowEditor
+ ├── - steps : List<Step>
+ ├── - undoStack : Stack<List<Step>>
+ ├── - redoStack : Stack<List<Step>>
+ ├── + addStep(Step)
+ ├── + removeStep(int)
+ ├── + editStepName(int,String)
+ ├── + undo()
+ └── + redo()
+
+Notes:
+- Stores **deep copies** of step lists
+- Redo stack clears after new edits
+
+Relationships:
+- WorkflowEditor → Step (manages)
+- WorkflowEditor → CompositeStep (deep copy recursion)
+
+---
+
+## 6. System-Level Relationships
+
+StepFactory → Step hierarchy  
+Visitor → Step hierarchy  
+Iterators → Step hierarchy  
+WorkflowEditor → Step hierarchy  
+
+CompositeStep is the central node connecting:
+- Factory creation
+- Visitor traversal
+- Iterator traversal
+- Memento deep copy
+
 
 # Test Suite Summary
 
