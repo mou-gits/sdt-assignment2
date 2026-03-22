@@ -131,8 +131,9 @@ This guide explains each part of the demo and what it illustrates.
 ## 1. Loading Workflow Definitions (JSON)
 
 `Main.java` loads multiple workflow examples from: 
+```json 
+src/main/resources/workflows/
 ```
-json src/main/resources/workflows/
 
 
 Each file is a JSON object describing a workflow using the same structure that the `StepFactory` expects. 
@@ -149,11 +150,12 @@ Example
   ]
 }
 ```
+
 The demo loads each file, parses it using `org.json`, and converts it into a `Map<String,Object>` using helper methods:
 
 - jsonToMap(JSONObject)
 
-- onToList(JSONArray)
+- jsonToList(JSONArray)
 
 These methods recursively convert JSON objects and arrays into Java maps and lists, making them compatible with the `StepFactory`.
 
