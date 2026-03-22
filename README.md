@@ -117,9 +117,27 @@ Design decisions:
 
 ---
 
-## 3. Example Workflow Configuration
+# Main.java Demonstration Guide
 
-Example configuration used in the demo:
+The `Main.java` file serves as a complete demonstration of the workflow automation
+system. It loads real JSON workflow definitions, converts them into Java maps,
+constructs workflow objects using the Factory Pattern, and then showcases all
+major system capabilities using the Visitor, Iterator, and Memento patterns.
+
+This guide explains each part of the demo and what it illustrates.
+
+---
+
+## 1. Loading Workflow Definitions (JSON)
+
+`Main.java` loads multiple workflow examples from: 
+```
+json src/main/resources/workflows/
+
+
+Each file is a JSON object describing a workflow using the same structure that the `StepFactory` expects. 
+
+Example 
 
 ```json
 {
@@ -130,3 +148,146 @@ Example configuration used in the demo:
     { "type": "delay", "name": "Delay500", "ms": 500 }
   ]
 }
+
+The demo loads each file, parses it using `org.json`, and converts it into a `Map<String,Object>` using helper methods:
+
+- jsonToMap(JSONObject)
+
+- onToList(JSONArray)
+
+These methods recursively convert JSON objects and arrays into Java maps and lists, making them compatible with the `StepFactory`.
+
+
+# Test Suite Summary
+
+This document summarizes all tests included in the project, grouped by category.
+Each bullet point lists the test class and a brief description of what it verifies.
+
+---
+
+## 1. Factory Pattern Tests
+
+### **FilterStepFactoryTest**
+- Verifies that a `filter` config creates a `FilterStep` with correct name.
+
+### **MissingTypeFactoryTest**
+- Ensures missing `"type"` in config throws `IllegalArgumentException`.
+
+### **NestedCompositeFactoryTest**
+- Confirms recursive creation of nested `CompositeStep` structures.
+
+### **NotifyStepFactoryTest**
+- Verifies that a `notify` config creates a `NotifyStep`.
+
+### **StepFactoryTest**
+- Creates a `DelayStep` from config.
+- Throws exception for unknown type.
+- Creates a `CompositeStep` with multiple children.
+
+### **TransformStepFactoryTest**
+- Verifies that a `transform` config creates a `TransformStep`.
+
+---
+
+## 2. Visitor Pattern Tests
+
+### **CostVisitorExactTest**
+- Computes exact cost for a workflow containing all step types.
+
+### **CostVisitorTest**
+- Ensures total cost is positive for a simple workflow.
+
+### **PrettyPrintIndentationTest**
+- Verifies indentation for nested composites in PrettyPrintVisitor.
+
+### **PrettyPrintVisitorTest**
+- Ensures PrettyPrintVisitor output contains expected step names.
+
+### **ValidationCompositeTest**
+- Confirms ValidationVisitor detects errors inside composite children.
+
+### **ValidationMissingFieldsTest**
+- Ensures missing fields in `TransformStep` produce validation errors.
+
+### **ValidationVisitorTest**
+- Detects errors in invalid steps.
+- Accepts valid steps without errors.
+
+### **VisitorDispatchAllTypesTest**
+- Ensures correct visitor dispatch for all step types.
+
+### **VisitorDispatchTest**
+- Confirms dispatch for `DelayStep` specifically.
+
+---
+
+## 3. Iterator Pattern Tests
+
+### **DepthFirstIteratorTest**
+- Verifies correct DFS traversal order for a multi‑level workflow.
+
+### **DFSIteratorDeepNestingTest**
+- Ensures DFS works correctly with deeply nested composites.
+
+### **DFSIteratorMissingElementTest**
+- Confirms `next()` throws when iterator is exhausted.
+
+### **LinearIteratorMissingElementTest**
+- (Placeholder class; no logic inside.)
+
+### **LinearIteratorSingleRootTest**
+- Ensures LinearIterator returns only the root when it is not composite.
+
+### **LinearIteratorTest**
+- Verifies correct top‑level traversal order for composite workflows.
+
+---
+
+## 4. Memento Pattern Tests
+
+### **MementoDeepCopyCompositeElementTest**
+- Ensures composite steps are deep‑copied in undo snapshots.
+
+### **MementoDeepCopyTest**
+- Confirms editing after undo does not mutate previous snapshots.
+
+### **WorkflowEditorOperationsTest**
+- Tests add, remove, and edit operations on the workflow editor.
+
+### **WorkflowEditorRedoClearTest**
+- Ensures redo history is cleared after a new edit.
+
+### **WorkflowEditorUndoRedoTest**
+- Verifies undo restores previous state and redo reapplies it.
+
+### **WorkflowEditorUndoRedoWithCompositeTest**
+- Ensures undo/redo works correctly with composite steps.
+
+---
+
+## 5. Integration Tests
+
+### **WorkflowIntegrationTest**
+- Builds a workflow from config and verifies:
+  - PrettyPrint output
+  - CostVisitor correctness
+  - ValidationVisitor correctness
+  - DFS iterator functionality
+
+### **WorkflowValidationIntegrationTest**
+- Ensures invalid workflows produce validation errors end‑to‑end.
+
+### **PrettyPrintAndDFSIntegrationTest**
+- Confirms PrettyPrint output contains all names visited by DFS traversal.
+
+---
+
+## Total Tests: **33**
+
+This suite provides full coverage of:
+- Factory Pattern  
+- Visitor Pattern  
+- Iterator Pattern  
+- Memento Pattern  
+- End‑to‑end workflow behavior  
+
