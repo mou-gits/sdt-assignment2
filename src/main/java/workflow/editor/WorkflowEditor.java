@@ -13,7 +13,7 @@ public class WorkflowEditor {
     private final Stack<List<Step>> redoStack = new Stack<>();
 
     public WorkflowEditor(List<Step> steps) {
-        this.steps = new ArrayList<>(steps); // start with a copy
+        this.steps = new ArrayList<>(steps);
     }
 
     // Adds a new step and saves current state for undo
