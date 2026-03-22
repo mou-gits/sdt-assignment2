@@ -6,6 +6,12 @@ public class PrettyPrintVisitor implements Visitor {
 
     private int depth = 0;
 
+    private StringBuilder output = new StringBuilder();
+
+    public String getOutput() {
+        return output.toString();
+    }
+
     private void printIndent() {
         for (int i = 0; i < depth; i++) {
             System.out.print("  ");

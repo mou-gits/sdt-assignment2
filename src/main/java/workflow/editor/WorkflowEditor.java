@@ -108,4 +108,36 @@ public class WorkflowEditor {
         throw new IllegalArgumentException("Unknown step type");
     }
 
+
+    public void editStepName(int index, String newName) {
+        if (index >= 0 && index < steps.size()) {
+            saveStateForUndo();
+
+            Step step = steps.get(index);
+
+            if (step instanceof DelayStep) {
+                DelayStep s = (DelayStep) step;
+                steps.set(index, new DelayStep(newName, s.getMs()));
+            }
+            else if (step instanceof NotifyStep) {
+                NotifyStep s = (NotifyStep) step;
+                steps.set(index, new NotifyStep(newName, s.getMessage()));
+            }
+            else if (step instanceof TransformStep) {
+                TransformStep s = (TransformStep) step;
+                steps.set(index, new TransformStep(newName, s.getField(), s.getOp()));
+            }
+            else if (step instanceof FilterStep) {
+                FilterStep s = (FilterStep) step;
+                steps.set(index, new FilterStep(newName, s.getField(), s.getContains()));
+            }
+            else if (step instanceof CompositeStep) {
+                CompositeStep s = (CompositeStep) step;
+                steps.set(index, new CompositeStep(newName, s.getChildren()));
+            }
+
+            redoStack.clear();
+        }
+    }
+
 }
