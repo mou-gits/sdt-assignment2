@@ -130,10 +130,7 @@ This guide explains each part of the demo and what it illustrates.
 
 ## 1. Loading Workflow Definitions (JSON)
 
-`Main.java` loads multiple workflow examples from: 
-```
-json src/main/resources/workflows/
-
+`Main.java` loads multiple workflow examples from: src/main/resources/workflows/
 
 Each file is a JSON object describing a workflow using the same structure that the `StepFactory` expects. 
 
