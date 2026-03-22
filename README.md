@@ -130,7 +130,10 @@ This guide explains each part of the demo and what it illustrates.
 
 ## 1. Loading Workflow Definitions (JSON)
 
-`Main.java` loads multiple workflow examples from: src/main/resources/workflows/
+`Main.java` loads multiple workflow examples from: 
+```
+json src/main/resources/workflows/
+
 
 Each file is a JSON object describing a workflow using the same structure that the `StepFactory` expects. 
 
@@ -145,7 +148,7 @@ Example
     { "type": "delay", "name": "Delay500", "ms": 500 }
   ]
 }
-```
+
 The demo loads each file, parses it using `org.json`, and converts it into a `Map<String,Object>` using helper methods:
 
 - jsonToMap(JSONObject)
@@ -162,15 +165,31 @@ This diagram summarizes the major classes and relationships in the Workflow Auto
 
 ## 1. Core Model
 
-Step (interface)
- ├── DelayStep
- ├── NotifyStep
- ├── TransformStep
- ├── FilterStep
- └── CompositeStep
-        └── - children : List<Step>
-        └── + getChildren() : List<Step>
+```mermaid
+classDiagram
 
+class Step {
+  <<interface>>
+  + accept(Visitor)
+  + getName()
+}
+
+class DelayStep
+class NotifyStep
+class TransformStep
+class FilterStep
+class CompositeStep {
+  - children : List<Step>
+  + getChildren()
+}
+
+Step <|-- DelayStep
+Step <|-- NotifyStep
+Step <|-- TransformStep
+Step <|-- FilterStep
+Step <|-- CompositeStep
+
+```
 Notes:
 - All concrete steps implement `accept(Visitor v)`
 - `CompositeStep` implements recursive traversal
@@ -179,10 +198,22 @@ Notes:
 
 ## 2. Factory Pattern
 
-StepFactory
- ├── + create(Map<String,Object>) : Step
- ├── Uses "type" field to determine concrete Step
- └── Recursively builds CompositeStep children
+```mermaid
+classDiagram
+
+class StepFactory {
+  + create(Map<String,Object>) : Step
+}
+
+class Step {
+  <<interface>>
+}
+
+class CompositeStep
+
+StepFactory --> Step
+StepFactory --> CompositeStep
+```
 
 Relationships:
 - StepFactory → Step (creates)
@@ -192,22 +223,36 @@ Relationships:
 
 ## 3. Visitor Pattern
 
-Visitor (interface)
- ├── + visit(DelayStep)
- ├── + visit(NotifyStep)
- ├── + visit(TransformStep)
- ├── + visit(FilterStep)
- ├── + visit(CompositeStep)
- └── + leaveComposite(CompositeStep)
+```mermaid
+classDiagram
 
-Concrete Visitors:
-- ValidationVisitor
-    - + errors : List<String>
-- CostVisitor
-    - + totalCost : int
-- PrettyPrintVisitor
-    - + output : StringBuilder
-    - + depth : int
+class Visitor {
+  <<interface>>
+  + visit(DelayStep)
+  + visit(NotifyStep)
+  + visit(TransformStep)
+  + visit(FilterStep)
+  + visit(CompositeStep)
+  + leaveComposite(CompositeStep)
+}
+
+class ValidationVisitor {
+  - errors : List<String>
+}
+
+class CostVisitor {
+  - totalCost : int
+}
+
+class PrettyPrintVisitor {
+  - output : StringBuilder
+  - depth : int
+}
+
+Visitor <|-- ValidationVisitor
+Visitor <|-- CostVisitor
+Visitor <|-- PrettyPrintVisitor
+```
 
 Relationships:
 - Step → Visitor (accept/visit)
@@ -217,13 +262,24 @@ Relationships:
 
 ## 4. Iterator Pattern
 
-DepthFirstIterator
- ├── - stack : Deque<Step>
- └── + next(), hasNext()
+```mermaid
+classDiagram
 
-LinearIterator
- ├── - list : List<Step>
- └── + next(), hasNext()
+class DepthFirstIterator {
+  - stack : Deque<Step>
+}
+
+class LinearIterator {
+  - list : List<Step>
+}
+
+class Step {
+  <<interface>>
+}
+
+DepthFirstIterator --> Step
+LinearIterator --> Step
+```
 
 Relationships:
 - Iterators operate on Step trees
@@ -233,16 +289,26 @@ Relationships:
 
 ## 5. Memento Pattern
 
-WorkflowEditor
- ├── - steps : List<Step>
- ├── - undoStack : Stack<List<Step>>
- ├── - redoStack : Stack<List<Step>>
- ├── + addStep(Step)
- ├── + removeStep(int)
- ├── + editStepName(int,String)
- ├── + undo()
- └── + redo()
+```mermaid
+classDiagram
 
+class WorkflowEditor {
+  - steps : List<Step>
+  - undoStack : Stack<List<Step>>
+  - redoStack : Stack<List<Step>>
+  + addStep(Step)
+  + removeStep(int)
+  + editStepName(int,String)
+  + undo()
+  + redo()
+}
+
+class Step {
+  <<interface>>
+}
+
+WorkflowEditor --> Step
+```
 Notes:
 - Stores **deep copies** of step lists
 - Redo stack clears after new edits
@@ -255,16 +321,127 @@ Relationships:
 
 ## 6. System-Level Relationships
 
-StepFactory → Step hierarchy  
-Visitor → Step hierarchy  
-Iterators → Step hierarchy  
-WorkflowEditor → Step hierarchy  
+```mermaid
+classDiagram
 
-CompositeStep is the central node connecting:
-- Factory creation
-- Visitor traversal
-- Iterator traversal
-- Memento deep copy
+%% ============================
+%% Core Model
+%% ============================
+
+class Step {
+  <<interface>>
+  + accept(Visitor)
+  + getName()
+}
+
+class DelayStep {
+  - name : String
+  - ms : int
+}
+
+class NotifyStep {
+  - name : String
+  - message : String
+}
+
+class TransformStep {
+  - name : String
+  - field : String
+  - op : String
+}
+
+class FilterStep {
+  - name : String
+  - field : String
+  - contains : String
+}
+
+class CompositeStep {
+  - name : String
+  - children : List<Step>
+  + getChildren()
+}
+
+Step <|-- DelayStep
+Step <|-- NotifyStep
+Step <|-- TransformStep
+Step <|-- FilterStep
+Step <|-- CompositeStep
+
+%% ============================
+%% Factory Pattern
+%% ============================
+
+class StepFactory {
+  + create(Map<String,Object>) : Step
+}
+
+StepFactory --> Step
+StepFactory --> CompositeStep
+
+%% ============================
+%% Visitor Pattern
+%% ============================
+
+class Visitor {
+  <<interface>>
+  + visit(DelayStep)
+  + visit(NotifyStep)
+  + visit(TransformStep)
+  + visit(FilterStep)
+  + visit(CompositeStep)
+  + leaveComposite(CompositeStep)
+}
+
+class ValidationVisitor {
+  - errors : List<String>
+}
+
+class CostVisitor {
+  - totalCost : int
+}
+
+class PrettyPrintVisitor {
+  - output : StringBuilder
+  - depth : int
+}
+
+Visitor <|-- ValidationVisitor
+Visitor <|-- CostVisitor
+Visitor <|-- PrettyPrintVisitor
+
+%% ============================
+%% Iterator Pattern
+%% ============================
+
+class DepthFirstIterator {
+  - stack : Deque<Step>
+}
+
+class LinearIterator {
+  - list : List<Step>
+}
+
+DepthFirstIterator --> Step
+LinearIterator --> Step
+
+%% ============================
+%% Memento Pattern
+%% ============================
+
+class WorkflowEditor {
+  - steps : List<Step>
+  - undoStack : Stack<List<Step>>
+  - redoStack : Stack<List<Step>>
+  + addStep(Step)
+  + removeStep(int)
+  + editStepName(int,String)
+  + undo()
+  + redo()
+}
+
+WorkflowEditor --> Step
+```
 
 
 # Test Suite Summary
