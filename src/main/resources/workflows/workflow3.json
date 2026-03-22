@@ -1,0 +1,14 @@
+{
+  "type": "composite",
+  "name": "NestedExample",
+  "steps": [
+    {
+      "type": "composite",
+      "name": "InnerGroup",
+      "steps": [
+        { "type": "delay", "name": "InnerDelay", "ms": 200 }
+      ]
+    },
+    { "type": "notify", "name": "NotifyAdmin", "message": "Inner done" }
+  ]
+}

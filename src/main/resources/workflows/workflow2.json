@@ -1,0 +1,9 @@
+{
+  "type": "composite",
+  "name": "EmailCleanup",
+  "steps": [
+    { "type": "filter", "name": "OnlyYahoo", "field": "email", "contains": "@yahoo.com" },
+    { "type": "transform", "name": "NormalizeName", "field": "name", "op": "uppercase" },
+    { "type": "notify", "name": "NotifyOps", "message": "Cleanup complete" }
+  ]
+}

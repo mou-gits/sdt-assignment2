@@ -1,0 +1,8 @@
+{
+  "type": "composite",
+  "name": "ValidationExample",
+  "steps": [
+    { "type": "delay", "name": "", "ms": -10 },
+    { "type": "filter", "name": "BadFilter", "field": "", "contains": "" }
+  ]
+}

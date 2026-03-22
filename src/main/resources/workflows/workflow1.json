@@ -1,0 +1,9 @@
+{
+  "type": "composite",
+  "name": "LeadProcessing",
+  "steps": [
+    { "type": "transform", "name": "TrimName", "field": "name", "op": "trim" },
+    { "type": "filter", "name": "OnlyGmail", "field": "email", "contains": "@gmail.com" },
+    { "type": "delay", "name": "Delay500", "ms": 500 }
+  ]
+}

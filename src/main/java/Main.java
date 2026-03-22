@@ -1,105 +1,114 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
 import workflow.factory.StepFactory;
 import workflow.iterator.DepthFirstIterator;
 import workflow.iterator.LinearIterator;
-import workflow.model.*;
+import workflow.model.Step;
 import workflow.visitor.*;
-import workflow.editor.WorkflowEditor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        System.out.println("===== FACTORY DEMO =====");
-
-        StepFactory factory = new StepFactory();
-
-        // Build config (simulating JSON)
-        Map<String, Object> step1 = Map.of(
-                "type", "transform",
-                "name", "TrimName",
-                "field", "name",
-                "op", "trim"
+        List<String> workflowFiles = List.of(
+                "src/main/resources/workflows/workflow1.json",
+                "src/main/resources/workflows/workflow2.json",
+                "src/main/resources/workflows/workflow3.json",
+                "src/main/resources/workflows/workflow4.json"
         );
 
-        Map<String, Object> step2 = Map.of(
-                "type", "filter",
-                "name", "OnlyGmail",
-                "field", "email",
-                "contains", "@gmail.com"
-        );
+        for (String file : workflowFiles) {
+            System.out.println("\n==============================");
+            System.out.println("Loading workflow: " + file);
+            System.out.println("==============================");
 
-        Map<String, Object> step3 = Map.of(
-                "type", "delay",
-                "name", "Delay500",
-                "ms", 500
-        );
+            Map<String, Object> config = loadJsonAsMap(file);
 
-        Map<String, Object> nestedComposite = Map.of(
-                "type", "composite",
-                "name", "NestedGroup",
-                "steps", List.of(step3)
-        );
+            StepFactory factory = new StepFactory();
+            Step root = factory.create(config);
 
-        Map<String, Object> rootComposite = Map.of(
-                "type", "composite",
-                "name", "RootWorkflow",
-                "steps", List.of(step1, step2, nestedComposite)
-        );
+            runAllFeatures(root);
+        }
+    }
 
-        Step root = factory.create(rootComposite);
+    private static void runAllFeatures(Step root) {
 
-        System.out.println("\n===== PRETTY PRINT (WITH SHRINKING CASCADE) =====");
-        PrettyPrintVisitor printVisitor = new PrettyPrintVisitor();
-        root.accept(printVisitor);
+        System.out.println("\n--- PRETTY PRINT ---");
+        PrettyPrintVisitor pp = new PrettyPrintVisitor();
+        root.accept(pp);
+        System.out.println(pp.getOutput());
 
-        System.out.println("\n===== COST VISITOR =====");
-        CostVisitor costVisitor = new CostVisitor();
-        root.accept(costVisitor);
-        System.out.println("Total cost: " + costVisitor.getTotalCost());
+        System.out.println("--- COST VISITOR ---");
+        CostVisitor cost = new CostVisitor();
+        root.accept(cost);
+        System.out.println("Total cost: " + cost.getTotalCost());
 
-        System.out.println("\n===== VALIDATION VISITOR =====");
-        ValidationVisitor validationVisitor = new ValidationVisitor();
-        root.accept(validationVisitor);
-        System.out.println("Errors: " + validationVisitor.getErrors());
+        System.out.println("--- VALIDATION VISITOR ---");
+        ValidationVisitor val = new ValidationVisitor();
+        root.accept(val);
+        System.out.println("Errors: " + val.getErrors());
 
-        System.out.println("\n===== DFS ITERATOR =====");
+        System.out.println("--- DFS ITERATOR ---");
         DepthFirstIterator dfs = new DepthFirstIterator(root);
         while (dfs.hasNext()) {
             System.out.println(dfs.next().getName());
         }
 
-        System.out.println("\n===== LINEAR ITERATOR =====");
-        LinearIterator linear = new LinearIterator(root);
-        while (linear.hasNext()) {
-            System.out.println(linear.next().getName());
+        System.out.println("--- LINEAR ITERATOR ---");
+        LinearIterator lin = new LinearIterator(root);
+        while (lin.hasNext()) {
+            System.out.println(lin.next().getName());
+        }
+    }
+
+    // ---------------------------
+    // JSON → Map Conversion
+    // ---------------------------
+
+    private static Map<String, Object> loadJsonAsMap(String filename) throws IOException {
+        String content = Files.readString(Paths.get(filename));
+        JSONObject json = new JSONObject(content);
+        return jsonToMap(json);
+    }
+
+    private static Map<String, Object> jsonToMap(JSONObject obj) {
+        Map<String, Object> map = new HashMap<>();
+
+        for (String key : obj.keySet()) {
+            Object value = obj.get(key);
+
+            if (value instanceof JSONObject) {
+                map.put(key, jsonToMap((JSONObject) value));
+            } else if (value instanceof JSONArray) {
+                map.put(key, jsonToList((JSONArray) value));
+            } else {
+                map.put(key, value);
+            }
         }
 
-        System.out.println("\n===== MEMENTO (UNDO/REDO) =====");
+        return map;
+    }
 
-        List<Step> steps = new ArrayList<>();
-        WorkflowEditor editor = new WorkflowEditor(steps);
+    private static List<Object> jsonToList(JSONArray arr) {
+        List<Object> list = new ArrayList<>();
 
-        editor.addStep(new DelayStep("A", 100));
-        editor.addStep(new DelayStep("B", 200));
+        for (int i = 0; i < arr.length(); i++) {
+            Object value = arr.get(i);
 
-        System.out.println("Steps after adding A, B: " + editor.getSteps().size());
+            if (value instanceof JSONObject) {
+                list.add(jsonToMap((JSONObject) value));
+            } else if (value instanceof JSONArray) {
+                list.add(jsonToList((JSONArray) value));
+            } else {
+                list.add(value);
+            }
+        }
 
-        editor.undo();
-        System.out.println("After undo: " + editor.getSteps().size());
-
-        editor.redo();
-        System.out.println("After redo: " + editor.getSteps().size());
-
-        editor.undo();
-        editor.addStep(new DelayStep("C", 300)); // clears redo
-
-        System.out.println("After adding C: " + editor.getSteps().size());
-
-        editor.redo(); // should do nothing
-        System.out.println("After redo attempt: " + editor.getSteps().size());
-
-        System.out.println("\n===== DONE =====");
+        return list;
     }
 }
