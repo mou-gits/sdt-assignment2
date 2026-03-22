@@ -1,9 +1,9 @@
+package VisitorPatternTests;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import workflow.model.*;
-import workflow.iterator.*;
 import workflow.visitor.*;
-import workflow.editor.*;
 
 
 public class ValidationVisitorTest {

@@ -1,9 +1,10 @@
+package VisitorPatternTests;
+
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import workflow.model.*;
-import workflow.iterator.*;
-import workflow.visitor.*;
-import workflow.editor.*;
+import workflow.visitor.Visitor;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class VisitorDispatchTest {
@@ -25,6 +26,11 @@ public class VisitorDispatchTest {
 
         public void visit(FilterStep step) {
             called = "filter";
+        }
+
+        @Override
+        public void leaveComposite(CompositeStep step) {
+            // Do nothing.. cant leave this as an abstract class
         }
 
         public void visit(CompositeStep step) {

@@ -1,3 +1,5 @@
+package FactoryPatternTests;
+
 import org.junit.jupiter.api.Test;
 import workflow.factory.StepFactory;
 import workflow.model.CompositeStep;

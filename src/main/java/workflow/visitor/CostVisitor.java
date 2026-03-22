@@ -32,6 +32,11 @@ public class CostVisitor implements Visitor {
     }
 
     @Override
+    public void leaveComposite(CompositeStep step) {
+        // I cant be doing anything here .. but i need this because otherwise the class becomes abstract
+    }
+
+    @Override
     public void visit(CompositeStep step) {
         // No cost for composite itself (optional)
     }

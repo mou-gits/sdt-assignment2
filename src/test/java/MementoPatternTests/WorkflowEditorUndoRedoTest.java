@@ -1,3 +1,5 @@
+package MementoPatternTests;
+
 import org.junit.jupiter.api.Test;
 import workflow.editor.WorkflowEditor;
 import workflow.model.DelayStep;

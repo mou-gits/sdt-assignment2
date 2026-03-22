@@ -1,3 +1,5 @@
+package VisitorPatternTests;
+
 import org.junit.jupiter.api.Test;
 import workflow.model.*;
 import workflow.visitor.CostVisitor;

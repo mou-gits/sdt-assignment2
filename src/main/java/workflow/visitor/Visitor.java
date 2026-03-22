@@ -12,5 +12,7 @@ public interface Visitor {
 
     void visit(FilterStep step);
 
+    void leaveComposite(CompositeStep step);
+
     void visit(CompositeStep step);
 }

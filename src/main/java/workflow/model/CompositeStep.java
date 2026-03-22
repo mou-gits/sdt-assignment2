@@ -36,5 +36,6 @@ public class CompositeStep implements Step {
         for (Step child : children) {
             child.accept(visitor);
         }
+        visitor.leaveComposite(this);  // exit composite
     }
 }

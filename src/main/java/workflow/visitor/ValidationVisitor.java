@@ -60,6 +60,11 @@ public class ValidationVisitor implements Visitor {
     }
 
     @Override
+    public void leaveComposite(CompositeStep step) {
+        // I cant be doing anything here .. but i need this because otherwise the class becomes abstract
+    }
+
+    @Override
     public void visit(CompositeStep step) {
         if (step.getName() == null || step.getName().isEmpty()) {
             errors.add("CompositeStep has empty name");

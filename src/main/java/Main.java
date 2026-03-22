@@ -36,15 +36,21 @@ public class Main {
                 "ms", 500
         );
 
-        Map<String, Object> composite = Map.of(
+        Map<String, Object> nestedComposite = Map.of(
                 "type", "composite",
-                "name", "RootWorkflow",
-                "steps", List.of(step1, step2, step3)
+                "name", "NestedGroup",
+                "steps", List.of(step3)
         );
 
-        Step root = factory.create(composite);
+        Map<String, Object> rootComposite = Map.of(
+                "type", "composite",
+                "name", "RootWorkflow",
+                "steps", List.of(step1, step2, nestedComposite)
+        );
 
-        System.out.println("\n===== PRETTY PRINT =====");
+        Step root = factory.create(rootComposite);
+
+        System.out.println("\n===== PRETTY PRINT (WITH SHRINKING CASCADE) =====");
         PrettyPrintVisitor printVisitor = new PrettyPrintVisitor();
         root.accept(printVisitor);
 

@@ -1,11 +1,15 @@
+package VisitorPatternTests;
+
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import workflow.model.CompositeStep;
+import workflow.model.DelayStep;
+import workflow.model.Step;
+import workflow.model.TransformStep;
+import workflow.visitor.PrettyPrintVisitor;
+
 import java.util.List;
 
-import workflow.model.*;
-import workflow.iterator.*;
-import workflow.visitor.*;
-import workflow.editor.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PrettyPrintVisitorTest {
 
